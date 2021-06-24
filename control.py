@@ -12,7 +12,8 @@ col_dic = {
 life_expectancy = 100
 weeks_per_year = 52
 days_per_week = 7
-dob = '19/01/1992'
+dob = '19/01/1992'  #<- Date of birth to be edited.
 
 #plotting constants
-last_year = 100
+last_year = 70  #<- Last year that is shown in the chart.
+radius = 150
