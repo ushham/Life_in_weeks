@@ -1,5 +1,5 @@
 #Database
-db_loc = 'life_database.csv'
+db_loc = 'life_database_test.csv'
 
 col_dic = {
     'date_from' : 0,
