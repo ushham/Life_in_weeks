@@ -33,10 +33,3 @@ class DataVisualisation():
 
         plt.xticks([])
         plt.show()
-
-import data_extract as de
-cl = de.DataExtract()
-data = cl.boolian_array_maker()
-
-x = DataVisualisation(data)
-y = x.scatter_graph()

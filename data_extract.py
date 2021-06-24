@@ -71,12 +71,3 @@ class DataExtract():
             array_holder[mask, cat_num] = 1 / len(unq_cats)
             
         return array_holder
-    
-
-# x = DataExtract()
-# y = x.open_db()
-
-# testdate = dt.datetime.today()
-# dob = dt.datetime.strptime(ct.dob, '%d/%m/%Y')
-# d = x.boolian_array_maker()
-# print(d[27, :, :])

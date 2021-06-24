@@ -15,4 +15,4 @@ days_per_week = 7
 dob = '19/01/1992'
 
 #plotting constants
-last_year = 28
+last_year = 100
