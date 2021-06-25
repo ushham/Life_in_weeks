@@ -16,4 +16,6 @@ dob = '19/01/1992'  #<- Date of birth to be edited.
 
 #plotting constants
 last_year = 70  #<- Last year that is shown in the chart.
-radius = 150
+radius = 150    #Size of scatter graph
+
+portrait_view = False #When true, the years of life are on the y axis.
