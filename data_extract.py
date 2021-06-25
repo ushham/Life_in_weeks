@@ -79,8 +79,8 @@ class DataExtract():
 
         num_batches = len(unq_batches)
 
-        array_holder = np.zeros((ct.last_year + 1, ct.weeks_per_year, num_batches)) #extra year added to include final year
-        mask_template = np.reshape(np.arange(0, (ct.last_year + 1) * ct.weeks_per_year), (ct.last_year + 1, ct.weeks_per_year))
+        array_holder = np.zeros((ct.life_expectancy + 1, ct.weeks_per_year, num_batches)) #extra year added to include final year
+        mask_template = np.reshape(np.arange(0, (ct.life_expectancy + 1) * ct.weeks_per_year), (ct.life_expectancy + 1, ct.weeks_per_year))
         
         for idx, entry in enumerate(data):
             cat_num = unq_batches.index((entry[self.col_dic['cat']], entry[self.col_dic['colour']]))

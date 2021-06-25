@@ -18,8 +18,14 @@ class DataVisualisation():
         fig.patch.set_facecolor('grey')
         ax.set_facecolor('grey')
 
-        X, Y = np.meshgrid(np.linspace(0, self.x, self.x), np.linspace(0, self.y, self.y))
+
+        if ct.portrait_view:
+            X, Y = np.meshgrid(np.linspace(0, self.x, self.x), np.linspace(0, self.y, self.y))
+        else:
+            X, Y = np.meshgrid(np.linspace(0, self.y, self.y), np.linspace(0, self.x, self.x))
+
         ax.scatter(X, Y, s=ct.radius * 0.25, facecolors='none', edgecolors='darkgrey')
+
         for idx, batch_it in enumerate(self.batches):
             
             cat_idx = self.categories.index(batch_it[0])
@@ -34,7 +40,8 @@ class DataVisualisation():
             if ct.portrait_view:
                 ax.scatter(X, Y, marker=xy, s=sxy ** 2 * blob_size, c=batch_it[1])
             else:
-                ax.scatter(X.T, Y.T, marker=xy, s=sxy ** 2 * blob_size.T, c=batch_it[1])
+                ax.scatter(X.T, Y.T, marker=xy, s=sxy ** 2 * blob_size, c=batch_it[1])
+
 
         if ct.portrait_view:
             plt.xticks([])
