@@ -11,7 +11,6 @@ class DataVisualisation():
         self.y, self.x, self.cat_num = self.data.shape
     
     def scatter_graph(self):
-        print(self.batches, self.categories)
         rad1 = 1 / len(self.categories)
 
         fig, ax = plt.subplots(num='My life in weeks', figsize=(12, 8))
@@ -32,8 +31,15 @@ class DataVisualisation():
 
             blob_size = np.reshape(self.data[:, :, idx], -1) * ct.radius
 
-            ax.scatter(X, Y, marker=xy, s=sxy ** 2 * blob_size, c=batch_it[1])
+            if ct.portrait_view:
+                ax.scatter(X, Y, marker=xy, s=sxy ** 2 * blob_size, c=batch_it[1])
+            else:
+                ax.scatter(X.T, Y.T, marker=xy, s=sxy ** 2 * blob_size.T, c=batch_it[1])
 
-        plt.xticks([])
+        if ct.portrait_view:
+            plt.xticks([])
+        else:
+            plt.yticks([])
+
         plt.show()
         return 0
