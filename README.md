@@ -14,10 +14,14 @@ Colours on the resulting piecharts are grouped by the 'Category' column in the d
 
 ![My_life_in_weeks](Images/My_life_in_weeks.png)
 
+## Requirements
+- python 3+
+- numpy
+- matplotlib
 
 ## Todos
 
-- Rename window 										 ✔︎
-- Do a better job resizing circles 			       ✘
-- Make colour options from database work  ✘
-- Finish writing README                               ✘
+- Rename window ✔︎
+- Do a better job resizing circles ✘
+- Make colour options from database work ✔︎
+- Finish writing README ✘

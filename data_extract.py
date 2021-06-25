@@ -16,11 +16,22 @@ class DataExtract():
         
         return data
 
-    def unique_of_cats(self, data):
-        #Returns distinct categories in the data
+    def unique_batches(self, data):
+        #Returns the unique combinations of category and colour [(cat, colour)]
+        all_batches = [(x[self.col_dic['cat']], x[self.col_dic['colour']]) for x in data if x[self.col_dic['cat']] != '']
+        unique_batches = list(dict.fromkeys(all_batches))
+
+        return unique_batches
+
+    def unique_cats(self, data):
         all_cats = [x[self.col_dic['cat']] for x in data if x[self.col_dic['cat']] != '']
-        unq_cats = set(all_cats)
-        return unq_cats
+        unique_cats = list(set(all_cats))
+        return unique_cats
+
+    def filter_data_by_batch(self, data, batch):
+        #Returns a list of data with the same (cat, colour) in the full data
+        filtered_data = [x for x in data if (x[self.col_dic['cat']], x[self.col_dic['colour']]) == batch]
+        return filtered_data
 
     def num_weeks_since_birth(self, date):
         #Given date, calculate the number of weeks since birth
@@ -38,7 +49,7 @@ class DataExtract():
         end_coords = []
 
         #Skip headers
-        for entry in data[1:]:
+        for entry in data:
             if entry[self.col_dic['date_from']] != '':
                 start_week = self.num_weeks_since_birth(dt.datetime.strptime(entry[self.col_dic['date_from']], '%d/%m/%Y'))
                 start_coords.append(start_week)
@@ -52,22 +63,33 @@ class DataExtract():
         
         return start_coords, end_coords
 
-    def boolian_array_maker(self):
-        #Given data, makes an array of whether a given week includes each category.
-
-        data = self.open_db()
-
-        unq_cats = list(self.unique_of_cats(data))
-        array_holder = np.zeros((ct.last_year + 1, ct.weeks_per_year, len(unq_cats))) #extra year added to include final year
-        mask_template = np.reshape(np.arange(0, (ct.last_year + 1) * ct.weeks_per_year), (ct.last_year + 1, ct.weeks_per_year))
+    def extract_data(self):
+        #Combines required data extraction functions to input into boolean array maker
+        data = self.open_db()[1:]
 
         s_coord, e_coord = self.coords_from_data(data)
+
+        unq_batches = self.unique_batches(data)
+
+        return data, unq_batches, s_coord, e_coord
+
+
+    def boolian_array_maker(self, data, unq_batches, s_coord, e_coord):
+        #Given data, makes an array of whether a given week includes each category.
+
+        num_batches = len(unq_batches)
+
+        array_holder = np.zeros((ct.last_year + 1, ct.weeks_per_year, num_batches)) #extra year added to include final year
+        mask_template = np.reshape(np.arange(0, (ct.last_year + 1) * ct.weeks_per_year), (ct.last_year + 1, ct.weeks_per_year))
         
-        for idx, entry in enumerate(data[1:]):
-            cat_num = unq_cats.index(entry[self.col_dic['cat']])
+        for idx, entry in enumerate(data):
+            cat_num = unq_batches.index((entry[self.col_dic['cat']], entry[self.col_dic['colour']]))
 
             #mask array
             mask = (mask_template >= s_coord[idx]) & (mask_template <= e_coord[idx])
-            array_holder[mask, cat_num] = 1 / len(unq_cats)
+            array_holder[mask, cat_num] = 1 / num_batches
+
+        #Pulls out unique categories
+        cats = self.unique_cats(data)
             
-        return array_holder
+        return array_holder, unq_batches, cats
