@@ -6,3 +6,4 @@ if __name__ == '__main__':
     data = cl.boolian_array_maker(*cl.extract_data())
 
     vs.DataVisualisation(*data).scatter_graph()
+    
