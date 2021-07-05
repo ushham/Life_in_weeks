@@ -22,8 +22,9 @@ Colours on the resulting piecharts are user defined and set in the database.
 ## Todos
 
 - Rename window ✔︎
-- Do a better job resizing circles ✘
+- Do a better job resizing circles  - Bodgy fix with landscape view.
 - Make colour options from database work ✔︎
 - Finish writing README ✘
 - Make option for transposing graph ✔︎
-- Addition of life events (red circle instead of grey) ✘
+- Addition of life events (custom circle colour instead of grey) ✔︎
+
