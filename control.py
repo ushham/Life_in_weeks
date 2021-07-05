@@ -14,6 +14,8 @@ weeks_per_year = 52
 days_per_week = 7
 dob = '19/01/1992'      #<- Date of birth to be edited.
 
+event = 'Life Event'    #<- The title in the database given to life events
+
 #plotting constants
 radius = 150            #Size of circles on scatter graph
 

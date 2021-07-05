@@ -7,24 +7,32 @@ class DataExtract():
     data_loc = ct.db_loc  
     col_dic = ct.col_dic  
     dob = dt.datetime.strptime(ct.dob, '%d/%m/%Y')
-    
-    def open_db(self):
-        #Opens and extracts data as list
+
+    def __init__(self):
         with open(self.data_loc, newline='') as f:
-            reader = csv.reader(f)
-            data = list(reader)
+            self.reader = csv.reader(f)
+            self.db = list(self.reader)
+    
+    # def open_db(self):
+    #     #Opens and extracts data as list
+    #     with open(self.data_loc, newline='') as f:
+    #         reader = csv.reader(f)
+    #         data = list(reader)
         
-        return data
+    #     return data
 
-    def unique_batches(self, data):
+    def unique_batches(self, data, rings=True):
         #Returns the unique combinations of category and colour [(cat, colour)]
-        all_batches = [(x[self.col_dic['cat']], x[self.col_dic['colour']]) for x in data if x[self.col_dic['cat']] != '']
-        unique_batches = list(dict.fromkeys(all_batches))
-
+        if rings:
+            all_batches = [(x[self.col_dic['cat']], x[self.col_dic['colour']]) for x in data if (x[self.col_dic['cat']] != '') and (x[self.col_dic['cat']] != ct.event)]
+            unique_batches = list(dict.fromkeys(all_batches))
+        else:
+            unique_batches = [x for x in data if (x[self.col_dic['cat']] != '') and (x[self.col_dic['cat']] == ct.event)]
+        
         return unique_batches
 
     def unique_cats(self, data):
-        all_cats = [x[self.col_dic['cat']] for x in data if x[self.col_dic['cat']] != '']
+        all_cats = [x[self.col_dic['cat']] for x in data if (x[self.col_dic['cat']] != '') and (x[self.col_dic['cat']] != ct.event)]
         unique_cats = list(set(all_cats))
         return unique_cats
 
@@ -65,7 +73,7 @@ class DataExtract():
 
     def extract_data(self):
         #Combines required data extraction functions to input into boolean array maker
-        data = self.open_db()[1:]
+        data = self.db[1:]
 
         s_coord, e_coord = self.coords_from_data(data)
 
@@ -83,13 +91,30 @@ class DataExtract():
         mask_template = np.reshape(np.arange(0, (ct.life_expectancy + 1) * ct.weeks_per_year), (ct.life_expectancy + 1, ct.weeks_per_year))
         
         for idx, entry in enumerate(data):
-            cat_num = unq_batches.index((entry[self.col_dic['cat']], entry[self.col_dic['colour']]))
+            if entry[self.col_dic['cat']] != ct.event:
+                cat_num = unq_batches.index((entry[self.col_dic['cat']], entry[self.col_dic['colour']]))
 
-            #mask array
-            mask = (mask_template >= s_coord[idx]) & (mask_template <= e_coord[idx])
-            array_holder[mask, cat_num] = 1 / num_batches
+                #mask array
+                mask = (mask_template >= s_coord[idx]) & (mask_template <= e_coord[idx])
+                array_holder[mask, cat_num] = 1 / num_batches
 
         #Pulls out unique categories
         cats = self.unique_cats(data)
             
         return array_holder, unq_batches, cats
+
+    def ring_locs(self):
+        #Returns the ring location and colours to show life events
+        data = self.db[1:]
+        unq_rings = self.unique_batches(data, False)
+        
+        holder = []
+
+        for event in unq_rings:
+            weeks_since_birth = self.num_weeks_since_birth(dt.datetime.strptime(event[self.col_dic['date_from']], '%d/%m/%Y'))
+            coords = (weeks_since_birth // ct.weeks_per_year, weeks_since_birth % ct.weeks_per_year)
+
+            holder.append([coords, event[self.col_dic['colour']]])
+        
+        return holder
+

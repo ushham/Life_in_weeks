@@ -4,10 +4,13 @@ import control as ct
 
 class DataVisualisation():
 
-    def __init__(self, data, batches, cats):
+    def __init__(self, data, batches, cats, events,):
         self.data = data
         self.batches = batches
         self.categories = cats
+
+        self.events = events
+
         self.y, self.x, self.cat_num = self.data.shape
     
     def scatter_graph(self):
@@ -18,11 +21,10 @@ class DataVisualisation():
         fig.patch.set_facecolor('grey')
         ax.set_facecolor('grey')
 
-
         if ct.portrait_view:
-            X, Y = np.meshgrid(np.linspace(0, self.x, self.x), np.linspace(0, self.y, self.y))
+            X, Y = np.meshgrid(np.linspace(0, self.x-1, self.x), np.linspace(0, self.y-1, self.y))
         else:
-            X, Y = np.meshgrid(np.linspace(0, self.y, self.y), np.linspace(0, self.x, self.x))
+            X, Y = np.meshgrid(np.linspace(0, self.y-1, self.y), np.linspace(0, self.x-1, self.x))
 
         ax.scatter(X, Y, s=ct.radius * 0.25, facecolors='none', edgecolors='darkgrey')
 
@@ -42,6 +44,12 @@ class DataVisualisation():
             else:
                 ax.scatter(X.T, Y.T, marker=xy, s=sxy ** 2 * blob_size, c=batch_it[1])
 
+        #Life events recolour scatter
+        for ev in self.events:
+            if ct.portrait_view:
+                ax.scatter(ev[0][1], ev[0][0], s=ct.radius * 0.25, facecolors='none', edgecolors=ev[1], linewidths=1.5)
+            else:
+                ax.scatter(ev[0][0], ev[0][1], s=ct.radius * 0.25, facecolors='none', edgecolors=ev[1], linewidths=1.5)
 
         if ct.portrait_view:
             plt.xticks([])
