@@ -10,7 +10,8 @@ col_dic = {
 }
 
 life_expectancy = 100   #<- Last year that is shown in the chart.
-weeks_per_year = 52
+standard_weeks_year = 52
+weeks_per_year = 52.17857143  #365.25 / 7
 days_per_week = 7
 dob = '19/01/1992'      #<- Date of birth to be edited.
 

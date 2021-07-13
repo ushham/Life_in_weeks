@@ -12,14 +12,6 @@ class DataExtract():
         with open(self.data_loc, newline='') as f:
             self.reader = csv.reader(f)
             self.db = list(self.reader)
-    
-    # def open_db(self):
-    #     #Opens and extracts data as list
-    #     with open(self.data_loc, newline='') as f:
-    #         reader = csv.reader(f)
-    #         data = list(reader)
-        
-    #     return data
 
     def unique_batches(self, data, rings=True):
         #Returns the unique combinations of category and colour [(cat, colour)]
@@ -47,9 +39,16 @@ class DataExtract():
             print(str(date) + ' is before you were born!')
             delta = 0
         else:
-            delta = (date - self.dob).days // ct.days_per_week
+            delta = (date - self.dob).days / ct.days_per_week
 
-        return delta
+        #Corrects the number of weeks since birth as there are 52.1 weeks/year, and we are trying to fit that into a 52 week grid
+        years_since_birth = delta / ct.weeks_per_year
+        years = int(years_since_birth)
+        this_year = years_since_birth - years
+
+        years_corr, this_year_corr = years * ct.standard_weeks_year, this_year * ct.standard_weeks_year
+     
+        return int(years_corr + this_year_corr)
 
     def coords_from_data(self, data):
         #Finds the coordinates of each entry in the database and returns list of start/end coords
@@ -74,9 +73,8 @@ class DataExtract():
     def extract_data(self):
         #Combines required data extraction functions to input into boolean array maker
         data = self.db[1:]
-
+      
         s_coord, e_coord = self.coords_from_data(data)
-
         unq_batches = self.unique_batches(data)
 
         return data, unq_batches, s_coord, e_coord
@@ -87,8 +85,8 @@ class DataExtract():
 
         num_batches = len(unq_batches)
 
-        array_holder = np.zeros((ct.life_expectancy + 1, ct.weeks_per_year, num_batches)) #extra year added to include final year
-        mask_template = np.reshape(np.arange(0, (ct.life_expectancy + 1) * ct.weeks_per_year), (ct.life_expectancy + 1, ct.weeks_per_year))
+        array_holder = np.zeros((ct.life_expectancy + 1, ct.standard_weeks_year, num_batches)) #extra year added to include final year
+        mask_template = np.reshape(np.arange(0, (ct.life_expectancy + 1) * ct.standard_weeks_year), (ct.life_expectancy + 1, ct.standard_weeks_year))
         
         for idx, entry in enumerate(data):
             if entry[self.col_dic['cat']] != ct.event:
@@ -112,9 +110,8 @@ class DataExtract():
 
         for event in unq_rings:
             weeks_since_birth = self.num_weeks_since_birth(dt.datetime.strptime(event[self.col_dic['date_from']], '%d/%m/%Y'))
-            coords = (weeks_since_birth // ct.weeks_per_year, weeks_since_birth % ct.weeks_per_year)
+            coords = (weeks_since_birth // ct.standard_weeks_year, weeks_since_birth % ct.standard_weeks_year)
 
             holder.append([coords, event[self.col_dic['colour']]])
         
         return holder
-
