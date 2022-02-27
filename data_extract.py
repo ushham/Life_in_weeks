@@ -72,6 +72,7 @@ class DataExtract():
 
     def extract_data(self):
         #Combines required data extraction functions to input into boolean array maker
+        #Outputs raw data, type and colour, and start and end coordinates for each entry.
         data = self.db[1:]
       
         s_coord, e_coord = self.coords_from_data(data)
@@ -115,3 +116,7 @@ class DataExtract():
             holder.append([coords, event[self.col_dic['colour']]])
         
         return holder
+
+if __name__ == "__main__":
+    de = DataExtract()
+    print(de.extract_data())
