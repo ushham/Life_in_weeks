@@ -5,18 +5,18 @@ from PIL import Image
 import numpy as np
 import os
 
-class home_locs():
-    dx = ct.gap_between_flags
-    dy = ct.gap_between_flags
+class liw_flag_chart():
+    dx = ct.gap_between_flags_x
+    dy = ct.gap_between_flags_y
 
-    new_x = 64
-    new_y = 64
+    resized_flag_x = 64
+    resized_flag_y = 64
 
     def __init__(self) -> None:
         self.vals, self.cats, self.start_coord, self.end_coord = de.DataExtract().extract_data()
         self.main_folder = os.getcwd()
-        self.n = self.new_y
-        self.m = self.new_x
+        self.n = self.resized_flag_y
+        self.m = self.resized_flag_x
 
         if ct.portrait_view:
             self.rows = ct.life_expectancy
@@ -26,7 +26,7 @@ class home_locs():
             self.rows = ct.standard_weeks_year
             self.cols = ct.life_expectancy
 
-    def extract_homes(self):
+    def extract_home_locations(self):
         data_hold = []
         country_hold = []
         for n, ln in enumerate(self.vals):
@@ -46,7 +46,13 @@ class home_locs():
         
         return 0
 
-    def get_flag(self, country):
+    @staticmethod
+    def paste_image(base_im, new_im, loc: tuple):
+        #Loc is a tuple
+        base_im.paste(new_im, loc)
+        return base_im
+
+    def import_flag(self, country: str):
         path = self.main_folder + '/' + ct.flag_folder + '/' + country + '.' + ct.flag_type
         
         if not(os.path.isfile(path)):
@@ -65,7 +71,7 @@ class home_locs():
     
         return Image.fromarray(img_arr)
 
-    def make_base(self):
+    def make_base_image(self):
 
         # TODO: make the dimentions of the base image customisable
         # TODO: make the background colour customisable
@@ -77,15 +83,11 @@ class home_locs():
             width = ct.life_expectancy
             length = ct.standard_weeks_year
 
-        b_n = ((self.n + ct.gap_between_flags)* length) + ct.gap_between_flags * 2
-        b_m = ((self.m + ct.gap_between_flags) * width) + ct.gap_between_flags * 2
-        image = Image.new('RGB', (b_m, b_n), (255, 255, 255))
+        base_image_size_y = ((self.n + ct.gap_between_flags_y)* length) + ct.gap_between_flags_y * 2
+        base_image_size_x = ((self.m + ct.gap_between_flags_x) * width) + ct.gap_between_flags_x * 2
+        image = Image.new('RGB', (base_image_size_x, base_image_size_y), (255, 255, 255))
         return image
 
-    def paste_im(self, base_im, new_im, loc):
-        #Loc is a tuple
-        base_im.paste(new_im, loc)
-        return base_im
 
     def data_to_array(self):
         # takes the data and produces a numpy array that has all of the flag data layed out
@@ -104,15 +106,15 @@ class home_locs():
         data_hold = data_hold.reshape((self.rows, self.cols))
         return data_hold
 
-    def prod_image(self, flag_data):
+    def make_image(self, flag_data):
         #Takes the flag data for each week and produces the full image
         #Flag data is an array of flag names for each location on the chart
 
         # Make base image
-        base = self.make_base()
+        base = self.make_base_image()
 
-        row_offset = ct.gap_between_flags
-        col_offset = ct.gap_between_flags
+        row_offset = ct.gap_between_flags_y if ct.portrait_view else ct.gap_between_flags_x
+        col_offset = ct.gap_between_flags_x if ct.portrait_view else ct.gap_between_flags_y
 
         for i in range(self.rows):
             print(i)
@@ -127,15 +129,15 @@ class home_locs():
                     base = self.paste_im(base, img_flag, (col_offset, row_offset))
 
                 if ct.portrait_view:
-                    col_offset += (self.new_x + ct.gap_between_flags)
+                    col_offset += (self.new_x + ct.gap_between_flags_x)
                 else:
-                    row_offset += (self.new_y + ct.gap_between_flags)
+                    row_offset += (self.new_y + ct.gap_between_flags_y)
 
             if ct.portrait_view:
-                row_offset += (self.new_x + ct.gap_between_flags)
+                row_offset += (self.new_x + ct.gap_between_flags_y)
                 col_offset = ct.gap_between_flags
             else:
-                col_offset += (self.new_y + ct.gap_between_flags)
+                col_offset += (self.new_y + ct.gap_between_flags_x)
                 row_offset = ct.gap_between_flags
 
         base.show()
@@ -146,12 +148,12 @@ class home_locs():
     def run_flag_script(self):
         #Function which runs the required functions
 
-        self.reduced_data, self.countries = self.extract_homes()
+        self.reduced_data, self.countries = self.extract_home_locations()
         self.check_flag_exists()
 
         flag_data = self.data_to_array()
         # np.savetxt('test.csv', flag_data, fmt='%s', delimiter=',')
-        self.prod_image(flag_data)
+        self.make_image(flag_data)
 
         return 0
 
@@ -164,7 +166,7 @@ class home_locs():
 
 
 if __name__ == "__main__":
-    hl = home_locs()
+    hl = liw_flag_chart()
     # x = hl.extract_homes()
 
     # flag_data = hl.data_to_array()

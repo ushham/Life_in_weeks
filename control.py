@@ -19,8 +19,9 @@ event = 'Life Event'    #<- The title in the database given to life events
 country_loc = 'Loc'       #<- the title in the database given to location for the given dates
 
 #plotting constants
-radius = 150            #Size of circles on scatter graph
-gap_between_flags = 5 #Flag gap parameter
+radius = 150             #Size of circles on scatter graph
+gap_between_flags_x = 5
+gap_between_flags_y = 5 
 
 portrait_view = True   #When true, the years of life are on the y axis.
 
