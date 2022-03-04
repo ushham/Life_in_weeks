@@ -8,6 +8,10 @@ class DataExtract():
     col_dic = ct.col_dic  
     dob = dt.datetime.strptime(ct.dob, '%d/%m/%Y')
 
+    # TODO: Include documentation
+    # TODO: Improve function names
+    # TODO: Allow num_weeks_since_birth to return fractions of a week
+
     def __init__(self):
         with open(self.data_loc, newline='') as f:
             self.reader = csv.reader(f)

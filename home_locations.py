@@ -5,9 +5,24 @@ from PIL import Image
 import numpy as np
 import os
 
-class liw_flag_chart():
-    dx = ct.gap_between_flags_x
-    dy = ct.gap_between_flags_y
+class Liw_Flag_Chart():
+    """A class that creates an image showing a flag for the location every week of your life
+
+    Attributes:
+    -----------
+    resized_flag_x : int
+        The horizontal number of pixels of the resized flag used in the image
+    resized_flag_y : int
+        The horizontal number of pixels of the resized flag used in the image
+
+    Methods:
+    --------
+    extract_home_locations():
+        
+    """
+
+    # TODO: Make flag division function
+    # TODO: Complete documentation
 
     resized_flag_x = 64
     resized_flag_y = 64
@@ -18,6 +33,9 @@ class liw_flag_chart():
         self.n = self.resized_flag_y
         self.m = self.resized_flag_x
 
+        self.reduced_data = self.extract_locations()
+        self.countries = [ln[0] for ln in self.reduced_data]
+
         if ct.portrait_view:
             self.rows = ct.life_expectancy
             self.cols = ct.standard_weeks_year
@@ -26,49 +44,71 @@ class liw_flag_chart():
             self.rows = ct.standard_weeks_year
             self.cols = ct.life_expectancy
 
-    def extract_home_locations(self):
+    def extract_locations(self):
+        """
+            Takes the raw data from csv database and extracts the key country data
+
+        Returns:
+            List consisting of Country, How the flag is to be divided, start week, end week
+        """
         data_hold = []
-        country_hold = []
         for n, ln in enumerate(self.vals):
             if ln[2] == ct.country_loc:
                 #Data is held as [Country, flag div, start_loc, end_loc]
                 line = [ln[5], ln[6], self.start_coord[n], self.end_coord[n]]
-                country_hold.append(ln[5])
+
                 data_hold.append(line)
-        return data_hold, country_hold
+
+        return data_hold
 
     def check_flag_exists(self):
+        """
+            Ensures the flag that is provided is in the given sub-folder
+        Returns:
+            0, script will exit with error if flag does not exist.
+        """
+
         for c in self.countries:
             path = self.main_folder + '/' + ct.flag_folder + '/' + c + '.' + ct.flag_type
             if not(os.path.isfile(path)):
                 print(c + " is not in your flag folder")
                 sys.exit()
-        
+
         return 0
 
     @staticmethod
     def paste_image(base_im, new_im, loc: tuple):
-        #Loc is a tuple
+        """
+            Pastes one image onto another
+        Args:
+            base_im (Image): Base image
+            new_im (Image): Image to be pasted onto base
+            loc (Tuple): Location of upper left pixel of new_im
+
+        Returns:
+            base_im (Image): Base image including new_im pasted on top of previous base
+        """
+        # Loc is a tuple
         base_im.paste(new_im, loc)
         return base_im
 
     def import_flag(self, country: str):
         path = self.main_folder + '/' + ct.flag_folder + '/' + country + '.' + ct.flag_type
-        
+
         if not(os.path.isfile(path)):
             # This error occurs when the np.chararray produces nonsence strings
             print("Unexpected error where the code is looking for flag named: " + country)
             sys.exit()
 
-            
+
         img = Image.open(path)
-        img.thumbnail((self.new_y, self.new_x), Image.ANTIALIAS)
+        img.thumbnail((self.resized_flag_y, self.resized_flag_x), Image.ANTIALIAS)
 
         #Set the transparency
         img_arr = np.array(img)
-        img_arr[img_arr[...,-1]==0] = [255,255,255,0]
-            
-    
+        img_arr[img_arr[..., -1] == 0] = [255, 255, 255, 0]
+
+
         return Image.fromarray(img_arr)
 
     def make_base_image(self):
@@ -91,18 +131,18 @@ class liw_flag_chart():
 
     def data_to_array(self):
         # takes the data and produces a numpy array that has all of the flag data layed out
-        
+
         max_str_len = len(max(self.countries, key=len))
-        
+
         data_hold = np.chararray((self.rows * self.cols), itemsize=max_str_len)
         data_hold[:] = ''
-    
+
         for ln in self.reduced_data:
             start = ln[2]
             end = ln[3] + 1
             country = ln[0]
             data_hold[start:end] = country
-            
+
         data_hold = data_hold.reshape((self.rows, self.cols))
         return data_hold
 
@@ -125,30 +165,29 @@ class liw_flag_chart():
                     flag_name = flag_data[i, j]
 
                 if flag_name != '':
-                    img_flag = self.get_flag(flag_name)
-                    base = self.paste_im(base, img_flag, (col_offset, row_offset))
+                    img_flag = self.import_flag(flag_name)
+                    base = self.paste_image(base, img_flag, (col_offset, row_offset))
 
                 if ct.portrait_view:
-                    col_offset += (self.new_x + ct.gap_between_flags_x)
+                    col_offset += (self.resized_flag_x + ct.gap_between_flags_x)
                 else:
-                    row_offset += (self.new_y + ct.gap_between_flags_y)
+                    row_offset += (self.resized_flag_y + ct.gap_between_flags_y)
 
             if ct.portrait_view:
-                row_offset += (self.new_x + ct.gap_between_flags_y)
-                col_offset = ct.gap_between_flags
+                row_offset += (self.resized_flag_x + ct.gap_between_flags_y)
+                col_offset = ct.gap_between_flags_x
             else:
-                col_offset += (self.new_y + ct.gap_between_flags_x)
-                row_offset = ct.gap_between_flags
+                col_offset += (self.resized_flag_y + ct.gap_between_flags_x)
+                row_offset = ct.gap_between_flags_y
 
         base.show()
 
         return 0
 
-    
+
     def run_flag_script(self):
         #Function which runs the required functions
 
-        self.reduced_data, self.countries = self.extract_home_locations()
         self.check_flag_exists()
 
         flag_data = self.data_to_array()
@@ -157,16 +196,16 @@ class liw_flag_chart():
 
         return 0
 
-                
-        
 
 
 
-    
+
+
+
 
 
 if __name__ == "__main__":
-    hl = liw_flag_chart()
+    hl = Liw_Flag_Chart()
     # x = hl.extract_homes()
 
     # flag_data = hl.data_to_array()
