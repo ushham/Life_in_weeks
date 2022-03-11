@@ -13,6 +13,7 @@ life_expectancy = 90   #<- Last year that is shown in the chart.
 standard_weeks_year = 52
 weeks_per_year = 52.17857143  #365.25 / 7
 days_per_week = 7
+week_divisions = 2      #<- Specifies how many divisions a week is divided into
 dob = '19/01/1992'      #<- Date of birth to be edited.
 
 event = 'Life Event'    #<- The title in the database given to life events

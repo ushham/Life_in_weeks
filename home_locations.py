@@ -28,7 +28,7 @@ class Liw_Flag_Chart():
     resized_flag_y = 64
 
     def __init__(self) -> None:
-        self.vals, self.cats, self.start_coord, self.end_coord = de.DataExtract().extract_data()
+        self.vals, self.cats, self.start_coord, self.end_coord = de.DataExtract().extract_data(whole_num=False)
         self.main_folder = os.getcwd()
         self.n = self.resized_flag_y
         self.m = self.resized_flag_x
@@ -207,7 +207,7 @@ class Liw_Flag_Chart():
 if __name__ == "__main__":
     hl = Liw_Flag_Chart()
     # x = hl.extract_homes()
-
+    print(hl.start_coord)
     # flag_data = hl.data_to_array()
     # hl.prod_image(flag_data)
     # print(flag_data[20, 1])

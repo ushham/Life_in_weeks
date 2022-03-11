@@ -37,7 +37,7 @@ class DataExtract():
         filtered_data = [x for x in data if (x[self.col_dic['cat']], x[self.col_dic['colour']]) == batch]
         return filtered_data
 
-    def num_weeks_since_birth(self, date):
+    def num_weeks_since_birth(self, date, whole_num=True):
         #Given date, calculate the number of weeks since birth
         if (date - self.dob).days < 0:
             print(str(date) + ' is before you were born!')
@@ -51,10 +51,18 @@ class DataExtract():
         this_year = years_since_birth - years
 
         years_corr, this_year_corr = years * ct.standard_weeks_year, this_year * ct.standard_weeks_year
-     
-        return int(years_corr + this_year_corr)
 
-    def coords_from_data(self, data):
+        rounded_week = (this_year_corr - int(this_year_corr)) * ct.week_divisions
+        rounded_week = int(rounded_week) / ct.week_divisions
+
+        if whole_num:
+            output = int(years_corr + this_year_corr)
+        else:
+            output = years_corr + rounded_week
+
+        return output
+
+    def coords_from_data(self, data, whole_num=True):
         #Finds the coordinates of each entry in the database and returns list of start/end coords
         start_coords = []
         end_coords = []
@@ -62,24 +70,24 @@ class DataExtract():
         #Skip headers
         for entry in data:
             if entry[self.col_dic['date_from']] != '':
-                start_week = self.num_weeks_since_birth(dt.datetime.strptime(entry[self.col_dic['date_from']], '%d/%m/%Y'))
+                start_week = self.num_weeks_since_birth(dt.datetime.strptime(entry[self.col_dic['date_from']], '%d/%m/%Y'), whole_num)
                 start_coords.append(start_week)
 
                 if entry[self.col_dic['date_to']] == '':  
                     end_week = self.num_weeks_since_birth(dt.datetime.today())
                 else:
-                    end_week = self.num_weeks_since_birth(dt.datetime.strptime(entry[self.col_dic['date_to']], '%d/%m/%Y'))
+                    end_week = self.num_weeks_since_birth(dt.datetime.strptime(entry[self.col_dic['date_to']], '%d/%m/%Y'), whole_num)
                     
                 end_coords.append(end_week)
         
         return start_coords, end_coords
 
-    def extract_data(self):
+    def extract_data(self, whole_num=True):
         #Combines required data extraction functions to input into boolean array maker
         #Outputs raw data, type and colour, and start and end coordinates for each entry.
         data = self.db[1:]
       
-        s_coord, e_coord = self.coords_from_data(data)
+        s_coord, e_coord = self.coords_from_data(data, whole_num)
         unq_batches = self.unique_batches(data)
 
         return data, unq_batches, s_coord, e_coord
@@ -123,4 +131,4 @@ class DataExtract():
 
 if __name__ == "__main__":
     de = DataExtract()
-    print(de.extract_data())
+    print(de.num_weeks_since_birth(dt.datetime.strptime('11/03/2022', '%d/%m/%Y')))
