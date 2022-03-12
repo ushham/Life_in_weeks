@@ -1,4 +1,5 @@
 import sys
+from matplotlib.pyplot import flag
 import data_extract as de
 import control as ct
 from PIL import Image
@@ -17,11 +18,8 @@ class Liw_Flag_Chart():
 
     Methods:
     --------
-    extract_home_locations():
-        
+    extract_home_locations(): 
     """
-
-    # TODO: Make flag division function
     # TODO: Complete documentation
 
     resized_flag_x = 64
@@ -76,22 +74,6 @@ class Liw_Flag_Chart():
 
         return 0
 
-    @staticmethod
-    def paste_image(base_im, new_im, loc: tuple):
-        """
-            Pastes one image onto another
-        Args:
-            base_im (Image): Base image
-            new_im (Image): Image to be pasted onto base
-            loc (Tuple): Location of upper left pixel of new_im
-
-        Returns:
-            base_im (Image): Base image including new_im pasted on top of previous base
-        """
-        # Loc is a tuple
-        base_im.paste(new_im, loc)
-        return base_im
-
     def import_flag(self, country: str):
         path = self.main_folder + '/' + ct.flag_folder + '/' + country + '.' + ct.flag_type
 
@@ -108,15 +90,53 @@ class Liw_Flag_Chart():
         img_arr = np.array(img)
         img_arr[img_arr[..., -1] == 0] = [255, 255, 255, 0]
 
-
         return Image.fromarray(img_arr)
 
-    def produce_flag(self, data):
+    def stack_flags(self, base, new_flag, start_share, end_share, division_type):
+        # Lower Diagonal mask
+        if division_type == "Diagonal":
+            mask_array = [[(i + j) / (2) for j in range(self.resized_flag_x)] for i in range(self.resized_flag_y)]
+
+        # Horizontal mask
+        elif division_type == "Horizontal":
+            mask_array = [[i for j in range(self.resized_flag_x)] for i in range(self.resized_flag_y)]
+
+        # Vertical mask
+        elif division_type == "Vertical":
+            mask_array = [[j for j in range(self.resized_flag_x)] for i in range(self.resized_flag_y)]
+        
+        else:
+            print("The program doesnt recognise the flag division definition " + division_type)
+            sys.exit()
+    
+        mask_array = np.array(mask_array) / np.max(mask_array)
+        mask_array = (mask_array > start_share) * (mask_array <= end_share)
+        
+        mask_for_flag = Image.fromarray(np.uint8(255 * mask_array))
+        base.paste(new_flag, (0, 0), mask_for_flag)
+        return base
+        
+    def produce_flag(self, data, week_num):
         #Function works by taking the first flag as base, and then overlays the other flags on top
+        # Logic for flag splitting:
+        #Everything is Diagonal, unless the types match
 
         base_flag = self.import_flag(data[0][0])
-        produced_flag = base_flag
-        return produced_flag
+
+        if len(data) > 1:
+            division_type = [x[1] for x in data]
+            same_div_type = (len(set(division_type)) == 1)
+
+            division_type = division_type[0] if same_div_type else "Diagonal"
+
+            for i in range(1, len(data)):
+                start_share = data[i][2] - int(data[i][2]) if int(data[i][2]) == week_num else data[i][3] - int(data[i][3])
+                end_share = 1 if int(data[i][3]) >= week_num else data[i][3] - int(data[i][3])
+
+                new_flag = self.import_flag(data[i][0])
+                base_flag = self.stack_flags(base_flag, new_flag, start_share, end_share, division_type)
+            
+        return base_flag
 
     def make_base_image(self):
 
@@ -174,8 +194,8 @@ class Liw_Flag_Chart():
                 #Filter the list of places to include only flags with given week number
                 filtered_flag = [x for x in self.reduced_data if int(x[2]) - week_number == 0 or (int(x[3]) - week_number == 0 and x[3] > week_number) or (x[2] <= week_number and x[3] > week_number)] 
                 if len(filtered_flag) > 0:
-                    prod_flag = self.produce_flag(filtered_flag)
-                    base = self.paste_image(base, prod_flag, (col_offset, row_offset))
+                    prod_flag = self.produce_flag(filtered_flag, week_number)
+                    base.paste(prod_flag, (col_offset, row_offset))
 
                 if ct.portrait_view:
                     col_offset += (self.resized_flag_x + ct.gap_between_flags_x)
@@ -193,44 +213,6 @@ class Liw_Flag_Chart():
 
         return 0
 
-    # def make_image(self, flag_data):
-    #     #Takes the flag data for each week and produces the full image
-    #     #Flag data is an array of flag names for each location on the chart
-
-    #     # Make base image
-    #     base = self.make_base_image()
-
-    #     row_offset = ct.gap_between_flags_y if ct.portrait_view else ct.gap_between_flags_x
-    #     col_offset = ct.gap_between_flags_x if ct.portrait_view else ct.gap_between_flags_y
-
-    #     for i in range(self.rows):
-    #         for j in range(self.cols):
-    #             try:
-    #                 flag_name = flag_data[i, j].decode()
-    #             except:
-    #                 flag_name = flag_data[i, j]
-
-    #             if flag_name != '':
-    #                 img_flag = self.import_flag(flag_name)
-    #                 base = self.paste_image(base, img_flag, (col_offset, row_offset))
-
-    #             if ct.portrait_view:
-    #                 col_offset += (self.resized_flag_x + ct.gap_between_flags_x)
-    #             else:
-    #                 row_offset += (self.resized_flag_y + ct.gap_between_flags_y)
-
-    #         if ct.portrait_view:
-    #             row_offset += (self.resized_flag_x + ct.gap_between_flags_y)
-    #             col_offset = ct.gap_between_flags_x
-    #         else:
-    #             col_offset += (self.resized_flag_y + ct.gap_between_flags_x)
-    #             row_offset = ct.gap_between_flags_y
-
-    #     base.show()
-
-    #     return 0
-
-
     def run_flag_script(self):
         #Function which runs the required functions
 
@@ -243,12 +225,5 @@ class Liw_Flag_Chart():
 
 if __name__ == "__main__":
     hl = Liw_Flag_Chart()
-    # x = hl.extract_homes()
-    # print(hl.start_coord)
-    # flag_data = hl.data_to_array()
-    # hl.prod_image(flag_data)
-    # print(flag_data[20, 1])
-    hl.run_flag_script()
-    # li = hl.reduced_data
-    # print(li)
-    # hl.produce_image()
+    hl.produce_image()
+
