@@ -53,7 +53,7 @@ class DataExtract():
         years_corr, this_year_corr = years * ct.standard_weeks_year, this_year * ct.standard_weeks_year
 
         rounded_week = (this_year_corr - int(this_year_corr)) * ct.week_divisions
-        rounded_week = int(rounded_week) / ct.week_divisions
+        rounded_week = int(rounded_week) / ct.week_divisions + int(this_year_corr)
 
         if whole_num:
             output = int(years_corr + this_year_corr)

@@ -33,7 +33,7 @@ class Liw_Flag_Chart():
         self.n = self.resized_flag_y
         self.m = self.resized_flag_x
 
-        self.reduced_data = self.extract_locations()
+        self.reduced_data = sorted(self.extract_locations(), key=lambda x: x[2])
         self.countries = [ln[0] for ln in self.reduced_data]
 
         if ct.portrait_view:
@@ -111,6 +111,13 @@ class Liw_Flag_Chart():
 
         return Image.fromarray(img_arr)
 
+    def produce_flag(self, data):
+        #Function works by taking the first flag as base, and then overlays the other flags on top
+
+        base_flag = self.import_flag(data[0][0])
+        produced_flag = base_flag
+        return produced_flag
+
     def make_base_image(self):
 
         # TODO: make the dimentions of the base image customisable
@@ -128,7 +135,6 @@ class Liw_Flag_Chart():
         image = Image.new('RGB', (base_image_size_x, base_image_size_y), (255, 255, 255))
         return image
 
-
     def data_to_array(self):
         # takes the data and produces a numpy array that has all of the flag data layed out
 
@@ -140,13 +146,17 @@ class Liw_Flag_Chart():
         for ln in self.reduced_data:
             start = ln[2]
             end = ln[3] + 1
+
+            start_int, end_int = int(start), int(end)
             country = ln[0]
-            data_hold[start:end] = country
+
+            if (start_int-start == 0) and (end_int - end == 0):
+                data_hold[start_int:end_int] = country
 
         data_hold = data_hold.reshape((self.rows, self.cols))
         return data_hold
 
-    def make_image(self, flag_data):
+    def produce_image(self):
         #Takes the flag data for each week and produces the full image
         #Flag data is an array of flag names for each location on the chart
 
@@ -157,16 +167,15 @@ class Liw_Flag_Chart():
         col_offset = ct.gap_between_flags_x if ct.portrait_view else ct.gap_between_flags_y
 
         for i in range(self.rows):
-            print(i)
+            print("Making year " + str(i))
             for j in range(self.cols):
-                try:
-                    flag_name = flag_data[i, j].decode()
-                except:
-                    flag_name = flag_data[i, j]
+                week_number = i * self.cols + j
 
-                if flag_name != '':
-                    img_flag = self.import_flag(flag_name)
-                    base = self.paste_image(base, img_flag, (col_offset, row_offset))
+                #Filter the list of places to include only flags with given week number
+                filtered_flag = [x for x in self.reduced_data if int(x[2]) - week_number == 0 or (int(x[3]) - week_number == 0 and x[3] > week_number) or (x[2] <= week_number and x[3] > week_number)] 
+                if len(filtered_flag) > 0:
+                    prod_flag = self.produce_flag(filtered_flag)
+                    base = self.paste_image(base, prod_flag, (col_offset, row_offset))
 
                 if ct.portrait_view:
                     col_offset += (self.resized_flag_x + ct.gap_between_flags_x)
@@ -184,31 +193,62 @@ class Liw_Flag_Chart():
 
         return 0
 
+    # def make_image(self, flag_data):
+    #     #Takes the flag data for each week and produces the full image
+    #     #Flag data is an array of flag names for each location on the chart
+
+    #     # Make base image
+    #     base = self.make_base_image()
+
+    #     row_offset = ct.gap_between_flags_y if ct.portrait_view else ct.gap_between_flags_x
+    #     col_offset = ct.gap_between_flags_x if ct.portrait_view else ct.gap_between_flags_y
+
+    #     for i in range(self.rows):
+    #         for j in range(self.cols):
+    #             try:
+    #                 flag_name = flag_data[i, j].decode()
+    #             except:
+    #                 flag_name = flag_data[i, j]
+
+    #             if flag_name != '':
+    #                 img_flag = self.import_flag(flag_name)
+    #                 base = self.paste_image(base, img_flag, (col_offset, row_offset))
+
+    #             if ct.portrait_view:
+    #                 col_offset += (self.resized_flag_x + ct.gap_between_flags_x)
+    #             else:
+    #                 row_offset += (self.resized_flag_y + ct.gap_between_flags_y)
+
+    #         if ct.portrait_view:
+    #             row_offset += (self.resized_flag_x + ct.gap_between_flags_y)
+    #             col_offset = ct.gap_between_flags_x
+    #         else:
+    #             col_offset += (self.resized_flag_y + ct.gap_between_flags_x)
+    #             row_offset = ct.gap_between_flags_y
+
+    #     base.show()
+
+    #     return 0
+
 
     def run_flag_script(self):
         #Function which runs the required functions
 
         self.check_flag_exists()
-
-        flag_data = self.data_to_array()
+        # flag_data = self.data_to_array()
         # np.savetxt('test.csv', flag_data, fmt='%s', delimiter=',')
-        self.make_image(flag_data)
+        self.produce_image()
 
         return 0
-
-
-
-
-
-
-
-
 
 if __name__ == "__main__":
     hl = Liw_Flag_Chart()
     # x = hl.extract_homes()
-    print(hl.start_coord)
+    # print(hl.start_coord)
     # flag_data = hl.data_to_array()
     # hl.prod_image(flag_data)
     # print(flag_data[20, 1])
     hl.run_flag_script()
+    # li = hl.reduced_data
+    # print(li)
+    # hl.produce_image()
