@@ -1,3 +1,4 @@
+from operator import le
 import sys
 from matplotlib.pyplot import flag
 import data_extract as de
@@ -20,7 +21,6 @@ class Liw_Flag_Chart():
     --------
     extract_home_locations(): 
     """
-    # TODO: Complete documentation
 
     resized_flag_x = 64
     resized_flag_y = 64
@@ -75,6 +75,19 @@ class Liw_Flag_Chart():
         return 0
 
     def import_flag(self, country: str):
+        """
+            Imports flag image as Pillow file. The transparent background is converted to white.
+
+        Parameters:
+            country: str
+                Name of the country or flag to import
+
+        Returns:
+            img_arr: Image
+                Pillow image of the specified flag
+
+        """
+
         path = self.main_folder + '/' + ct.flag_folder + '/' + country + '.' + ct.flag_type
 
         if not(os.path.isfile(path)):
@@ -86,13 +99,37 @@ class Liw_Flag_Chart():
         img = Image.open(path)
         img.thumbnail((self.resized_flag_y, self.resized_flag_x), Image.ANTIALIAS)
 
-        #Set the transparency
+        #Set the transparent section to white
         img_arr = np.array(img)
         img_arr[img_arr[..., -1] == 0] = [255, 255, 255, 0]
 
         return Image.fromarray(img_arr)
 
     def stack_flags(self, base, new_flag, start_share, end_share, division_type):
+        """
+            Creates a combined flag for weeks when there are multiple flags
+
+            Parameters:
+                base: Image
+                    The first or base flag
+
+                new_flag: Image
+                    The flag to paste onto the base flag
+
+                start_share: Float
+                    Starting location for pasting the new_flag, as a % of the original image
+                
+                end_share: Float
+                    End location for pasting the new_flag as % of the original image
+
+                division_type: Str
+                    How the pasting division is set
+
+            Returns:
+                base: Image
+                    The comnbined image
+
+        """
         # Lower Diagonal mask
         if division_type == "Diagonal":
             mask_array = [[(i + j) / (2) for j in range(self.resized_flag_x)] for i in range(self.resized_flag_y)]
@@ -117,13 +154,27 @@ class Liw_Flag_Chart():
         return base
         
     def produce_flag(self, data, week_num):
-        #Function works by taking the first flag as base, and then overlays the other flags on top
-        # Logic for flag splitting:
-        #Everything is Diagonal, unless the types match
+        """
+            Takes the list of flags for a given week to produce a composite flag
+
+            Parameters:
+                data: list
+                    list of Country, Division type, start week, end week data
+                
+                week_num: int
+                    The week number the program is focusing on
+
+            Returns:
+                base_flag: Image
+                    Composite flag
+        """
 
         base_flag = self.import_flag(data[0][0])
 
         if len(data) > 1:
+
+            # Logic for working out the division of flags
+            # Everything is Diagonal, unless the types match
             division_type = [x[1] for x in data]
             same_div_type = (len(set(division_type)) == 1)
 
@@ -139,10 +190,13 @@ class Liw_Flag_Chart():
         return base_flag
 
     def make_base_image(self):
+        """
+            Produces the background image used in the program
 
-        # TODO: make the dimentions of the base image customisable
-        # TODO: make the background colour customisable
-
+            Returns:
+                image: Image
+                    Background image
+        """
         if ct.portrait_view:
             width = ct.standard_weeks_year
             length = ct.life_expectancy
@@ -155,30 +209,14 @@ class Liw_Flag_Chart():
         image = Image.new('RGB', (base_image_size_x, base_image_size_y), (255, 255, 255))
         return image
 
-    def data_to_array(self):
-        # takes the data and produces a numpy array that has all of the flag data layed out
-
-        max_str_len = len(max(self.countries, key=len))
-
-        data_hold = np.chararray((self.rows * self.cols), itemsize=max_str_len)
-        data_hold[:] = ''
-
-        for ln in self.reduced_data:
-            start = ln[2]
-            end = ln[3] + 1
-
-            start_int, end_int = int(start), int(end)
-            country = ln[0]
-
-            if (start_int-start == 0) and (end_int - end == 0):
-                data_hold[start_int:end_int] = country
-
-        data_hold = data_hold.reshape((self.rows, self.cols))
-        return data_hold
-
     def produce_image(self):
-        #Takes the flag data for each week and produces the full image
-        #Flag data is an array of flag names for each location on the chart
+        """
+            Produce the final image
+
+            Returns:
+                base: Image
+                    Final image
+        """
 
         # Make base image
         base = self.make_base_image()
@@ -188,11 +226,13 @@ class Liw_Flag_Chart():
 
         for i in range(self.rows):
             print("Making year " + str(i))
+            
             for j in range(self.cols):
                 week_number = i * self.cols + j
 
                 #Filter the list of places to include only flags with given week number
                 filtered_flag = [x for x in self.reduced_data if int(x[2]) - week_number == 0 or (int(x[3]) - week_number == 0 and x[3] > week_number) or (x[2] <= week_number and x[3] > week_number)] 
+
                 if len(filtered_flag) > 0:
                     prod_flag = self.produce_flag(filtered_flag, week_number)
                     base.paste(prod_flag, (col_offset, row_offset))
@@ -217,7 +257,6 @@ class Liw_Flag_Chart():
         #Function which runs the required functions
 
         self.check_flag_exists()
-        # flag_data = self.data_to_array()
         # np.savetxt('test.csv', flag_data, fmt='%s', delimiter=',')
         self.produce_image()
 

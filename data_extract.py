@@ -53,8 +53,8 @@ class DataExtract():
         years_corr, this_year_corr = years * ct.standard_weeks_year, this_year * ct.standard_weeks_year
 
         rounded_week = (this_year_corr - int(this_year_corr)) * ct.week_divisions
-        rounded_week = int(rounded_week) / ct.week_divisions + int(this_year_corr)
-
+        rounded_week = round(rounded_week) / ct.week_divisions + int(this_year_corr)
+       
         if whole_num:
             output = int(years_corr + this_year_corr)
         else:
@@ -131,4 +131,4 @@ class DataExtract():
 
 if __name__ == "__main__":
     de = DataExtract()
-    print(de.num_weeks_since_birth(dt.datetime.strptime('11/03/2022', '%d/%m/%Y')))
+    print(de.num_weeks_since_birth(dt.datetime.strptime('28/06/2003', '%d/%m/%Y'), whole_num=False))
