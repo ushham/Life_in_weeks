@@ -16,7 +16,7 @@ The output is an image, with a flag for each location you were in for a given we
 
 The results look a bit like:
 
-![Wall_of_flags.jpg](/Users/ushhamilton/Documents/03_Programming/Python/Life_in_weeks/Images/Wall_of_flags.jpg)
+![Wall_of_flags.jpg](Images/Wall_of_flags.jpg)
 
 ### Lie Pie Chart
 
@@ -48,5 +48,3 @@ Colours on the resulting piecharts are user defined and set in the database.
 - [x] Addition of life events (custom circle colour instead of grey)
 
 - [ ] Wall of flags merge with main
-
-
