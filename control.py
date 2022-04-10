@@ -1,5 +1,5 @@
 #Database
-db_loc = 'life_database_gh.csv'
+db_loc = 'life_database.csv'
 
 col_dic = {
     'date_from' : 0,
@@ -9,7 +9,7 @@ col_dic = {
     'colour' : 4
 }
 
-life_expectancy = 40   #<- Last year that is shown in the chart.
+life_expectancy = 15   #<- Last year that is shown in the chart.
 standard_weeks_year = 52
 weeks_per_year = 52.17857143  #365.25 / 7
 days_per_week = 7

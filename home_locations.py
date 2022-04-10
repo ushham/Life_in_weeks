@@ -1,6 +1,4 @@
-from operator import le
 import sys
-from matplotlib.pyplot import flag
 import data_extract as de
 import control as ct
 from PIL import Image
