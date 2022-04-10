@@ -47,4 +47,4 @@ Colours on the resulting piecharts are user defined and set in the database.
 
 - [x] Addition of life events (custom circle colour instead of grey)
 
-- [ ] Wall of flags merge with main
+- [x] Wall of flags merge with main
